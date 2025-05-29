@@ -2,6 +2,7 @@ from flask import Flask, request, render_template, jsonify, current_app
 from flask_cors import CORS
 import math
 import os
+import socket
 
 # Change template folder to relative path
 app = Flask(__name__, 
@@ -23,6 +24,11 @@ def internal_error(error):
 @app.route('/')
 def index():
     try:
+        # Add network debug info
+        hostname = socket.gethostname()
+        local_ip = socket.gethostbyname(hostname)
+        print(f"Server running on: {local_ip}")
+
         # Add absolute path debug info
         current_dir = os.path.dirname(os.path.abspath(__file__))
         template_path = os.path.join(current_dir, 'templates')
@@ -78,4 +84,7 @@ def calculate():
 if __name__ == '__main__':
     app.config['TEMPLATES_AUTO_RELOAD'] = True
     app.config['DEBUG'] = True
-    app.run(host='127.0.0.1', port=8080, use_reloader=True)
+    print("Starting server...")
+    # Change to 0.0.0.0 to allow all connections and try port 5000
+    app.run(host='0.0.0.0', port=5000, use_reloader=True)
+    print("Server started!")
