@@ -1,90 +1,79 @@
-from flask import Flask, request, render_template, jsonify, current_app
+from flask import Flask, request, render_template, jsonify
 from flask_cors import CORS
 import math
-import os
-import socket
+import logging
 
-# Change template folder to relative path
-app = Flask(__name__, 
-    template_folder='templates',
-    static_folder='static')
+# Configure logging
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
+
+app = Flask(__name__, template_folder='templates')
 CORS(app)
-
-# Add error handlers
-@app.errorhandler(404)
-def not_found_error(error):
-    print(f"404 Error: {error}")
-    return "Page not found", 404
-
-@app.errorhandler(500)
-def internal_error(error):
-    print(f"500 Error: {error}")
-    return "Internal server error", 500
 
 @app.route('/')
 def index():
-    try:
-        # Add network debug info
-        hostname = socket.gethostname()
-        local_ip = socket.gethostbyname(hostname)
-        print(f"Server running on: {local_ip}")
-
-        # Add absolute path debug info
-        current_dir = os.path.dirname(os.path.abspath(__file__))
-        template_path = os.path.join(current_dir, 'templates')
-        print(f"Current directory: {current_dir}")
-        print(f"Template path: {template_path}")
-        print(f"Template exists: {os.path.exists(os.path.join(template_path, 'index.html'))}")
-        return render_template('index.html')
-    except Exception as e:
-        print(f"Error rendering template: {str(e)}")
-        return str(e), 500
+    return render_template('index.html')
 
 @app.route('/calculate', methods=['POST'])
 def calculate():
-    num1 = float(request.form.get('num1', 0))
-    num2 = float(request.form.get('num2', 0))
-    operation = request.form.get('operation', '')
-    
-    result = 0
     try:
-        if operation == '+':
-            result = num1 + num2
-        elif operation == '-':
-            result = num1 - num2
-        elif operation == '*':
-            result = num1 * num2
-        elif operation == '/':
-            result = num1 / num2
-        elif operation == 'sin':
-            result = math.sin(math.radians(num1))
-        elif operation == 'cos':
-            result = math.cos(math.radians(num1))
-        elif operation == 'tan':
-            result = math.tan(math.radians(num1))
-        elif operation == 'log':
-            result = math.log10(num1)
-        elif operation == 'ln':
-            result = math.log(num1)
-        elif operation == 'sqrt':
-            result = math.sqrt(num1)
-        elif operation == 'pow':
-            result = math.pow(num1, 2)
-        elif operation == 'exp':
-            result = math.exp(num1)
-        elif operation == 'pi':
-            result = math.pi
-        elif operation == 'e':
-            result = math.e
+        num1 = float(request.form.get('num1', 0))
+        num2 = float(request.form.get('num2', 0))
+        operation = request.form.get('operation', '')
+        
+        logger.debug(f"Calculation request - num1: {num1}, num2: {num2}, operation: {operation}")
+        
+        # Single number operations
+        if operation in ['sin', 'cos', 'tan', 'log', 'ln', 'sqrt', 'pow', 'exp', 'pi', 'e']:
+            result = handle_single_operation(num1, operation)
+        # Two number operations
+        else:
+            result = handle_binary_operation(num1, num2, operation)
             
+        logger.debug(f"Calculation result: {result}")
         return jsonify({'result': result})
+    
+    except ZeroDivisionError:
+        return jsonify({'error': 'Division by zero'}), 400
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 400
     except Exception as e:
-        return jsonify({'result': 'Error', 'message': str(e)}), 400
+        logger.error(f"Calculation error: {str(e)}")
+        return jsonify({'error': 'Calculation error'}), 500
+
+def handle_single_operation(num, operation):
+    if operation == 'sin':
+        return math.sin(math.radians(num))
+    elif operation == 'cos':
+        return math.cos(math.radians(num))
+    elif operation == 'tan':
+        return math.tan(math.radians(num))
+    elif operation == 'log':
+        return math.log10(num)
+    elif operation == 'ln':
+        return math.log(num)
+    elif operation == 'sqrt':
+        return math.sqrt(num)
+    elif operation == 'pow':
+        return math.pow(num, 2)
+    elif operation == 'exp':
+        return math.exp(num)
+    elif operation == 'pi':
+        return math.pi
+    elif operation == 'e':
+        return math.e
+
+def handle_binary_operation(num1, num2, operation):
+    if operation == '+':
+        return num1 + num2
+    elif operation == '-':
+        return num1 - num2
+    elif operation == '*':
+        return num1 * num2
+    elif operation == '/':
+        if num2 == 0:
+            raise ZeroDivisionError("Division by zero")
+        return num1 / num2
 
 if __name__ == '__main__':
-    app.config['TEMPLATES_AUTO_RELOAD'] = True
-    app.config['DEBUG'] = True
-    print("Starting server...")
-    # Change to 0.0.0.0 to allow all connections and try port 5000
-    app.run(host='0.0.0.0', port=5000, use_reloader=True)
-    print("Server started!")
+    app.run(debug=True, host='0.0.0.0', port=5000)
