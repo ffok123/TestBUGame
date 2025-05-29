@@ -1,13 +1,20 @@
 from flask import Flask, request, render_template, jsonify
 from flask_cors import CORS
 import math
+import os
 
-app = Flask(__name__)
+app = Flask(__name__, template_folder=os.path.abspath('templates'))
 CORS(app)  # Enable CORS for all routes
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    try:
+        print(f"Template folder: {app.template_folder}")  # Debug print
+        print(f"Templates available: {os.listdir(app.template_folder)}")  # Debug print
+        return render_template('index.html')
+    except Exception as e:
+        print(f"Error rendering template: {str(e)}")  # Debug print
+        return str(e), 500
 
 @app.route('/calculate', methods=['POST'])
 def calculate():
@@ -51,4 +58,5 @@ def calculate():
         return jsonify({'result': 'Error', 'message': str(e)}), 400
 
 if __name__ == '__main__':
-    app.run(debug=True, host='localhost', port=5000)
+    app.config['TEMPLATES_AUTO_RELOAD'] = True
+    app.run(debug=True, host='127.0.0.1', port=5000)
