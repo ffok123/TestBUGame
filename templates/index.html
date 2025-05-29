@@ -129,10 +129,26 @@
         }
         
         function calculate() {
-            document.getElementById('num1').value = firstNumber;
-            document.getElementById('num2').value = currentNumber;
-            document.getElementById('operation').value = currentOperation;
-            document.getElementById('calcForm').submit();
+            const formData = new FormData();
+            formData.append('num1', firstNumber);
+            formData.append('num2', currentNumber);
+            formData.append('operation', currentOperation);
+
+            fetch('/calculate', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                currentNumber = data.result.toString();
+                document.getElementById('result').innerText = currentNumber;
+                firstNumber = '';
+                currentOperation = '';
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('result').innerText = 'Error';
+            });
         }
 
         function memoryStore() {
