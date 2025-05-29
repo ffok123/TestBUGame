@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scientific Calculator</title>
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+        }
+        .calculator {
+            width: 360px;
+            padding: 25px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin: 20px auto;
+        }
+        .display {
+            background: #1a1a1a;
+            color: #fff;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+        #result {
+            font-size: 24px;
+            text-align: right;
+            min-height: 30px;
+        }
+        .buttons {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+        }
+        button {
+            padding: 15px 10px;
+            font-size: 14px;
+            border-radius: 12px;
+            transition: all 0.3s;
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .memory { background: #e64980; color: white; }
+        .scientific { background: #862e9c; color: white; }
+        .operator { background: #4c6ef5; color: white; }
+        .equals { background: #37b24d; color: white; grid-column: span 2; }
+        .clear { background: #e03131; color: white; }
+    </style>
+</head>
+<body>
+    <div class="calculator">
+        <div class="display">
+            <div id="result"></div>
+        </div>
+        <form action="/calculate" method="POST" id="calcForm">
+            <div class="buttons">
+                <button type="button" class="memory" onclick="memoryStore()">MS</button>
+                <button type="button" class="memory" onclick="memoryRecall()">MR</button>
+                <button type="button" class="memory" onclick="memoryClear()">MC</button>
+                <button type="button" class="memory" onclick="memoryPlus()">M+</button>
+                <button type="button" class="memory" onclick="memoryMinus()">M-</button>
+
+                <button type="button" class="scientific" onclick="setOperation('sin')">sin</button>
+                <button type="button" class="scientific" onclick="setOperation('cos')">cos</button>
+                <button type="button" class="scientific" onclick="setOperation('tan')">tan</button>
+                <button type="button" class="scientific" onclick="setOperation('log')">log</button>
+                <button type="button" class="scientific" onclick="setOperation('ln')">ln</button>
+
+                <button type="button" class="scientific" onclick="setOperation('sqrt')">√</button>
+                <button type="button" class="scientific" onclick="setOperation('pow')">x²</button>
+                <button type="button" class="scientific" onclick="setOperation('exp')">exp</button>
+                <button type="button" class="scientific" onclick="setOperation('pi')">π</button>
+                <button type="button" class="scientific" onclick="setOperation('e')">e</button>
+
+                <button type="button" onclick="appendValue('7')">7</button>
+                <button type="button" onclick="appendValue('8')">8</button>
+                <button type="button" onclick="appendValue('9')">9</button>
+                <button type="button" class="operator" onclick="setOperation('/')">/</button>
+                
+                <button type="button" onclick="appendValue('4')">4</button>
+                <button type="button" onclick="appendValue('5')">5</button>
+                <button type="button" onclick="appendValue('6')">6</button>
+                <button type="button" class="operator" onclick="setOperation('*')">×</button>
+                
+                <button type="button" onclick="appendValue('1')">1</button>
+                <button type="button" onclick="appendValue('2')">2</button>
+                <button type="button" onclick="appendValue('3')">3</button>
+                <button type="button" class="operator" onclick="setOperation('-')">-</button>
+                
+                <button type="button" onclick="appendValue('0')">0</button>
+                <button type="button" onclick="appendValue('.')">.</button>
+                <button type="button" class="equals" onclick="calculate()">=</button>
+                <button type="button" class="operator" onclick="setOperation('+')">+</button>
+                
+                <button type="button" class="clear" onclick="clearCalculator()">C</button>
+                <button type="button" onclick="backspace()">⌫</button>
+            </div>
+            <input type="hidden" name="num1" id="num1">
+            <input type="hidden" name="num2" id="num2">
+            <input type="hidden" name="operation" id="operation">
+        </form>
+    </div>
+    <script>
+        let currentNumber = '';
+        let firstNumber = '';
+        let currentOperation = '';
+        let memory = 0;
+        
+        function appendValue(value) {
+            currentNumber += value;
+            document.getElementById('result').innerText = currentNumber;
+        }
+        
+        function setOperation(op) {
+            if (currentNumber !== '') {
+                firstNumber = currentNumber;
+                currentNumber = '';
+                currentOperation = op;
+            }
+        }
+        
+        function calculate() {
+            document.getElementById('num1').value = firstNumber;
+            document.getElementById('num2').value = currentNumber;
+            document.getElementById('operation').value = currentOperation;
+            document.getElementById('calcForm').submit();
+        }
+
+        function memoryStore() {
+            memory = parseFloat(currentNumber) || 0;
+        }
+
+        function memoryRecall() {
+            currentNumber = memory.toString();
+            document.getElementById('result').innerText = currentNumber;
+        }
+
+        function memoryClear() {
+            memory = 0;
+        }
+
+        function memoryPlus() {
+            memory += parseFloat(currentNumber) || 0;
+        }
+
+        function memoryMinus() {
+            memory -= parseFloat(currentNumber) || 0;
+        }
+
+        function backspace() {
+            currentNumber = currentNumber.slice(0, -1);
+            document.getElementById('result').innerText = currentNumber;
+        }
+
+        function clearCalculator() {
+            currentNumber = '';
+            firstNumber = '';
+            currentOperation = '';
+            document.getElementById('result').innerText = '';
+        }
+    </script>
+</body>
+</html>
