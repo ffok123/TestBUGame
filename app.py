@@ -42,6 +42,11 @@ def calculate():
         return jsonify({'error': 'Calculation error'}), 500
 
 def handle_single_operation(num, operation):
+    if operation in ['log', 'ln', 'sqrt'] and num <= 0:
+        raise ValueError(f"Invalid input for {operation}: {num}")
+    if operation == 'tan' and (num % 90 == 0 and num % 180 != 0):
+        raise ValueError(f"Invalid input for tan: {num} (undefined)")
+    
     if operation == 'sin':
         return math.sin(math.radians(num))
     elif operation == 'cos':
