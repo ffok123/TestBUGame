@@ -76,4 +76,14 @@ def handle_binary_operation(num1, num2, operation):
         return num1 / num2
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    print("Starting Flask server...")
+    try:
+        # Try different host/port combinations if one fails
+        try:
+            app.run(debug=True, host='127.0.0.1', port=5000)
+        except:
+            print("Trying alternate port...")
+            app.run(debug=True, host='127.0.0.1', port=8080)
+    except Exception as e:
+        print(f"Server error: {e}")
+        print("Try accessing the app at: http://127.0.0.1:5000 or http://127.0.0.1:8080")
