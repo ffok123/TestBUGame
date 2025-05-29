@@ -17,22 +17,41 @@ def index():
 @app.route('/calculate', methods=['POST'])
 def calculate():
     try:
-        num1 = float(request.form.get('num1', 0))
-        num2 = float(request.form.get('num2', 0))
-        operation = request.form.get('operation', '')
+        # Get raw inputs
+        num1_raw = request.form.get('num1', None)
+        num2_raw = request.form.get('num2', None)
+        operation = request.form.get('operation', '').strip()
+
+        # Log raw inputs
+        logger.debug(f"Raw inputs - num1: {num1_raw}, num2: {num2_raw}, operation: {operation}")
+
+        # Validate and convert inputs
+        try:
+            num1 = float(num1_raw) if num1_raw else 0
+        except ValueError:
+            raise ValueError(f"Invalid input for num1: {num1_raw}")
         
-        logger.debug(f"Calculation request - num1: {num1}, num2: {num2}, operation: {operation}")
-        
-        # Single number operations
+        try:
+            num2 = float(num2_raw) if num2_raw else 0
+        except ValueError:
+            raise ValueError(f"Invalid input for num2: {num2_raw}")
+
+        # Validate operation
+        valid_operations = ['sin', 'cos', 'tan', 'log', 'ln', 'sqrt', 'pow', 'exp', 'pi', 'e', '+', '-', '*', '/']
+        if operation not in valid_operations:
+            raise ValueError(f"Invalid operation: {operation}")
+
+        logger.debug(f"Validated inputs - num1: {num1}, num2: {num2}, operation: {operation}")
+
+        # Perform calculation
         if operation in ['sin', 'cos', 'tan', 'log', 'ln', 'sqrt', 'pow', 'exp', 'pi', 'e']:
             result = handle_single_operation(num1, operation)
-        # Two number operations
         else:
             result = handle_binary_operation(num1, num2, operation)
-            
+
         logger.debug(f"Calculation result: {result}")
         return jsonify({'result': result})
-    
+
     except ZeroDivisionError:
         return jsonify({'error': 'Division by zero'}), 400
     except ValueError as e:

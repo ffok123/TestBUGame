@@ -114,12 +114,12 @@
         let firstNumber = '';
         let currentOperation = '';
         let memory = 0;
-        
+
         function appendValue(value) {
             currentNumber += value;
             document.getElementById('result').innerText = currentNumber;
         }
-        
+
         function setOperation(op) {
             if (currentNumber !== '') {
                 firstNumber = currentNumber;
@@ -127,8 +127,13 @@
                 currentOperation = op;
             }
         }
-        
+
         function calculate() {
+            if (!firstNumber || !currentOperation) {
+                document.getElementById('result').innerText = 'Error: Missing input';
+                return;
+            }
+
             const formData = new FormData();
             formData.append('num1', firstNumber);
             formData.append('num2', currentNumber);
@@ -140,10 +145,14 @@
             })
             .then(response => response.json())
             .then(data => {
-                currentNumber = data.result.toString();
-                document.getElementById('result').innerText = currentNumber;
-                firstNumber = '';
-                currentOperation = '';
+                if (data.error) {
+                    document.getElementById('result').innerText = data.error;
+                } else {
+                    currentNumber = data.result.toString();
+                    document.getElementById('result').innerText = currentNumber;
+                    firstNumber = '';
+                    currentOperation = '';
+                }
             })
             .catch(error => {
                 console.error('Error:', error);
