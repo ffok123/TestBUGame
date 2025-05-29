@@ -1,7 +1,9 @@
 from flask import Flask, request, render_template, jsonify
+from flask_cors import CORS
 import math
 
 app = Flask(__name__)
+CORS(app)  # Enable CORS for all routes
 
 @app.route('/')
 def index():
@@ -49,4 +51,4 @@ def calculate():
         return jsonify({'result': 'Error', 'message': str(e)}), 400
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    app.run(debug=True, host='localhost', port=5000)
