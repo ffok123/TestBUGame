@@ -1,19 +1,37 @@
-from flask import Flask, request, render_template, jsonify
+from flask import Flask, request, render_template, jsonify, current_app
 from flask_cors import CORS
 import math
 import os
 
-app = Flask(__name__, template_folder=os.path.abspath('templates'))
-CORS(app)  # Enable CORS for all routes
+# Change template folder to relative path
+app = Flask(__name__, 
+    template_folder='templates',
+    static_folder='static')
+CORS(app)
+
+# Add error handlers
+@app.errorhandler(404)
+def not_found_error(error):
+    print(f"404 Error: {error}")
+    return "Page not found", 404
+
+@app.errorhandler(500)
+def internal_error(error):
+    print(f"500 Error: {error}")
+    return "Internal server error", 500
 
 @app.route('/')
 def index():
     try:
-        print(f"Template folder: {app.template_folder}")  # Debug print
-        print(f"Templates available: {os.listdir(app.template_folder)}")  # Debug print
+        # Add absolute path debug info
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        template_path = os.path.join(current_dir, 'templates')
+        print(f"Current directory: {current_dir}")
+        print(f"Template path: {template_path}")
+        print(f"Template exists: {os.path.exists(os.path.join(template_path, 'index.html'))}")
         return render_template('index.html')
     except Exception as e:
-        print(f"Error rendering template: {str(e)}")  # Debug print
+        print(f"Error rendering template: {str(e)}")
         return str(e), 500
 
 @app.route('/calculate', methods=['POST'])
@@ -59,4 +77,5 @@ def calculate():
 
 if __name__ == '__main__':
     app.config['TEMPLATES_AUTO_RELOAD'] = True
-    app.run(debug=True, host='127.0.0.1', port=8080)
+    app.config['DEBUG'] = True
+    app.run(host='127.0.0.1', port=8080, use_reloader=True)
